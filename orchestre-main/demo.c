@@ -43,6 +43,15 @@ void* thread_client(void *args)
 		case 2:
 			strncpy(name, "whistle-toy.wav", MAX_LEN);
 			break;
+		case 3:
+			strncpy(name, "sword/Epee_coupe.wav", MAX_LEN);
+			break;
+		case 4:
+			strncpy(name, "sword/Epee_air.wav", MAX_LEN);
+			break;
+		case 5:
+			strncpy(name, "sword/Epee.wav", MAX_LEN);
+			break;		
 		default:
 			strncpy(name, "sample-12s.wav", MAX_LEN);
 			break;
@@ -64,6 +73,15 @@ void* thread_client(void *args)
 	 * éventuellement changer la position ou
 	 * l'orientation, etc.
 	 */
+
+
+	//POSITION
+	/* here's the change, position is X, Y, Z */
+	alSource3i(s, AL_POSITION, 100, 0, 0);
+	alSource3i(s, AL_VELOCITY, 0, 0, 0);
+	alSourcei(s, AL_LOOPING, AL_FALSE);
+	alSourcei(s, AL_BUFFER, (ALint)b);
+
 	alSourcePlay(s);
 
 	char c;
@@ -136,6 +154,11 @@ int main(int argc, char* argv[])
         assert(pthread_create(&thr[nthr], NULL, &thread_client, args)==0);
         P(0);
         nthr++;
+
+		//Hack perso pour refaire tous les instru a l'infini
+		if(nthr%6 == 0){
+			nthr =0;
+		}
     }
 
 	libereSem();

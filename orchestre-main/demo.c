@@ -10,7 +10,13 @@
 #include <string.h>
 #include <AL/al.h>
 #include <AL/alc.h>
+
+#if defined(__APPLE__)
+#include "freealut/alut.h"
+#else
 #include <AL/alut.h>
+#endif
+
 
 #include "semaphore.h"
 
@@ -35,16 +41,16 @@ void* thread_client(void *args)
 	switch(nthr)
 	{
 		case 0:
-			strncpy(name, "uplifting-flute.wav", MAX_LEN);
+			strncpy(name, "sounds/uplifting-flute.wav", MAX_LEN);
 			break;
 		case 1:
-			strncpy(name, "tribal-flute.wav", MAX_LEN);
+			strncpy(name, "sounds/tribal-flute.wav", MAX_LEN);
 			break;
 		case 2:
-			strncpy(name, "whistle-toy.wav", MAX_LEN);
+			strncpy(name, "sounds/whistle-toy.wav", MAX_LEN);
 			break;
 		default:
-			strncpy(name, "sample-12s.wav", MAX_LEN);
+			strncpy(name, "sounds/sample-12s.wav", MAX_LEN);
 			break;
 	}
 	V(0);
@@ -103,7 +109,9 @@ int main(int argc, char* argv[])
 	assert(sockfd>=0);
 
     int opt = 1;
-    assert(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR|SO_BROADCAST, &opt, sizeof(opt))==0);
+    int optsock1 = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+	int optsock2 = setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt));
+	assert(optsock1==0 && optsock2 == 0);
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);

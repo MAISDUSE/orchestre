@@ -1,8 +1,13 @@
-make : 
-	gcc demo.c semaphore.c -o demo -lopenal -pthread -lalut -Wall -Wextra -Wconversion -Werror
+.PHONY: demo sender
 
-server :
+demo:
+	gcc -o demo demo.c semaphore.c freealut/*.c -lalut -pthread -lopenal -lm -Wall -Wconversion -Wextra
+
+sender:
+	gcc -o sender sender.c -Wall -Wconversion -Wextra
+
+play:
 	./demo 1234
 
-sound : 
-	nc 127.0.0.1 1234 &
+send:
+	./sender 1234

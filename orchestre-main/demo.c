@@ -27,13 +27,13 @@ void setSourcePosition(ALuint source, ALuint buffer, ALfloat position[], ALfloat
 	alSourcef(source, AL_LOOPING, AL_FALSE);
 	alSourcei(source, AL_BUFFER, (ALint)buffer);
 	
-	/*
+	
 	//Aténuation
-	float globalRefDistance = 125.0f;
+	float globalRefDistance = 75.0f;
 	float globalMaxDistance = 1250.0f;
 	alSourcef(source, AL_REFERENCE_DISTANCE, globalRefDistance);
 	alSourcef(source, AL_MAX_DISTANCE, globalMaxDistance);
-	*/
+	
 	//Direction
 	alSourcefv(source, AL_DIRECTION, direction);
 	alSourcef(source, AL_CONE_INNER_ANGLE, 180.0f);
@@ -55,6 +55,7 @@ void* thread_client(void *args)
 
 	#define MAX_LEN 50
 	char name[MAX_LEN];
+	ALfloat alPos[] = {0.0f, 0.0f, 0.0f}; 
 	switch(nthr)
 	{
 		case 0:
@@ -67,12 +68,21 @@ void* thread_client(void *args)
 			strncpy(name, "whistle-toy.wav", MAX_LEN);
 			break;
 		case 3:
+			alPos[0] = 100.0f;
+			alPos[1] = 0.0f;
+			alPos[2] = 0.0f;
 			strncpy(name, "sword/Epee_coupe.wav", MAX_LEN);
 			break;
 		case 4:
+			alPos[0] = -100.0f;
+			alPos[1] = 0.0f;
+			alPos[2] = 0.0f;
 			strncpy(name, "sword/Epee_air.wav", MAX_LEN);
 			break;
 		case 5:
+			alPos[0] = 0.0f;
+			alPos[1] = 100.0f;
+			alPos[2] = 0.0f;
 			strncpy(name, "sword/Epee.wav", MAX_LEN);
 			break;		
 		default:
@@ -80,6 +90,7 @@ void* thread_client(void *args)
 			break;
 	}
 	V(0);
+	printf("%f - %f - %f | ", alPos[0], alPos[1], alPos[2]);
 	printf("%s connected to socket %d...\n", name, sockfd);
 
 	ALuint b = alutCreateBufferFromFile(name);
@@ -98,8 +109,9 @@ void* thread_client(void *args)
 	 */
 
 	/* here's the change, position is X, Y, Z */
-	ALfloat alPos[] = {100.0f, 0.0f, 0.0f}; 
+
 	ALfloat alDir[] = {0.0f, 0.0f, 0.0f}; 
+	
 	setSourcePosition(s, b, alPos, alDir);
 
 	alSourcePlay(s);

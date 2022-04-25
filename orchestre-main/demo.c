@@ -18,6 +18,15 @@
 
 ALuint sources[N_INSTRU];
 
+void init_openAL () {
+  ALCdevice *device = alcOpenDevice (NULL);
+  ALCcontext *context = alcCreateContext (device, NULL);
+  alcMakeContextCurrent (context);
+  alutInitWithoutContext(0, NULL);
+  alListener3f(AL_POSITION, 0, 0, 0);
+  alListener3f(AL_VELOCITY, 0, 0, 0);
+  alutSleep (5);
+}
 
 void setSourcePosition(ALuint source, ALuint buffer, ALfloat position[], ALfloat direction[]){
 
@@ -38,6 +47,7 @@ void setSourcePosition(ALuint source, ALuint buffer, ALfloat position[], ALfloat
 	alSourcefv(source, AL_DIRECTION, direction);
 	alSourcef(source, AL_CONE_INNER_ANGLE, 180.0f);
 	alSourcef(source, AL_CONE_OUTER_ANGLE, 240.0f);
+	
 	
 };
 
@@ -142,8 +152,11 @@ int main(int argc, char* argv[])
 	int init=0;
     initSem(1,argv[0],&init);
 
+	
     // initialisation de la bibliothèque de gestion du son
-    alutInit(0, NULL);
+    //alutInit(0, NULL);
+	init_openAL();
+	//
     alGetError();
 
     // position par défaut pour l'écoute

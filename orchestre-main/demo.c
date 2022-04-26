@@ -76,34 +76,34 @@ void *thread_client(void *args)
 	switch (nthr)
 	{
 	case 0:
-		strncpy(name, "uplifting-flute.wav", MAX_LEN);
+		strncpy(name, "sounds/uplifting-flute.wav", MAX_LEN);
 		break;
 	case 1:
-		strncpy(name, "tribal-flute.wav", MAX_LEN);
+		strncpy(name, "sounds/tribal-flute.wav", MAX_LEN);
 		break;
 	case 2:
-		strncpy(name, "whistle-toy.wav", MAX_LEN);
+		strncpy(name, "sounds/whistle-toy.wav", MAX_LEN);
 		break;
 	case 3:
 		alPos[0] = 20.0f;
 		alPos[1] = 0.0f;
 		alPos[2] = 0.0f;
-		strncpy(name, "sword/Epee_coupe.wav", MAX_LEN);
+		strncpy(name, "sounds/Epee_coupe.wav", MAX_LEN);
 		break;
 	case 4:
 		alPos[0] = -20.0f;
 		alPos[1] = 0.0f;
 		alPos[2] = 0.0f;
-		strncpy(name, "sword/Epee_air.wav", MAX_LEN);
+		strncpy(name, "sounds/Epee_air.wav", MAX_LEN);
 		break;
 	case 5:
 		alPos[0] = 0.0f;
 		alPos[1] = 20.0f;
 		alPos[2] = 0.0f;
-		strncpy(name, "sword/Epee.wav", MAX_LEN);
+		strncpy(name, "sounds/Epee.wav", MAX_LEN);
 		break;
 	default:
-		strncpy(name, "sample-12s.wav", MAX_LEN);
+		strncpy(name, "sounds/sample-12s.wav", MAX_LEN);
 		break;
 	}
 	V(0);
@@ -144,7 +144,7 @@ void *thread_client(void *args)
 	return NULL;
 }
 
-int thread_orchestra(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	if (argc - 1 != 1)
 	{
@@ -160,9 +160,8 @@ int thread_orchestra(int argc, char *argv[])
 	initSem(1, argv[0], &init);
 
 	// initialisation de la bibliothèque de gestion du son
-	// alutInit(0, NULL);
-	init_openAL();
-	//
+	alutInit(0, NULL);
+	//init_openAL();
 	alGetError();
 
 	// position par défaut pour l'écoute
@@ -207,12 +206,13 @@ int thread_orchestra(int argc, char *argv[])
 		P(0);
 		nthr++;
 
+		/*
 		// Hack perso pour refaire tous les instru a l'infini
 		if (nthr % 6 == 0)
 		{
 			nthr = 0;
 		}
-		close_openAL();
+		*/
 	}
 
 	libereSem();
@@ -224,12 +224,3 @@ int thread_orchestra(int argc, char *argv[])
 	return 0;
 }
 
-int main(int argc, char **argv)
-{
-	init_openAL();
-	thread_orchestra(argc, argv);
-	while (1)
-		;
-	close_openAL();
-	return EXIT_SUCCESS;
-}

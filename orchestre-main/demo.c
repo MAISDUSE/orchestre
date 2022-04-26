@@ -41,7 +41,7 @@ void* thread_client(void *args)
 	switch(nthr)
 	{
 		case 0:
-			strncpy(name, "sounds/uplifting-flute.wav", MAX_LEN);
+			strncpy(name, "sounds/rttn.wav", MAX_LEN);
 			break;
 		case 1:
 			strncpy(name, "sounds/tribal-flute.wav", MAX_LEN);
@@ -71,6 +71,23 @@ void* thread_client(void *args)
 	 * l'orientation, etc.
 	 */
 	alSourcePlay(s);
+
+	ALint sizeInBytes;
+	ALint channels;
+	ALint bits;
+	ALint frequency;
+	ALuint lengthInSamples;
+	int durationInSeconds;
+
+	alGetBufferi(b, AL_SIZE, &sizeInBytes);
+	alGetBufferi(b, AL_CHANNELS, &channels);
+	alGetBufferi(b, AL_BITS, &bits);
+	alGetBufferi(b, AL_FREQUENCY, &frequency);
+
+	lengthInSamples = sizeInBytes * 8 / (channels * bits);
+	durationInSeconds = lengthInSamples / frequency;
+
+	send(sockfd, &durationInSeconds, sizeof(durationInSeconds), 0);
 
 	char c;
 	ssize_t n;

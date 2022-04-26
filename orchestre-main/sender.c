@@ -30,15 +30,20 @@ int main(int argc, char* argv[])
     // la connexion déclenche la création du thread distant
     assert(connect(sockfd, (struct sockaddr *)&addr, sizeof(addr))>=0);
 
+	int duration;
+	assert(recv(sockfd, &duration, sizeof(duration), 0) > 0);
+
+	printf("duration of song : %d\n", duration);
+
+
 	#define BUFF_SIZE 10
 	char buffer[BUFF_SIZE];
 	strncpy(buffer, "test", BUFF_SIZE);
-
 	assert(send(sockfd, buffer, sizeof(buffer), 0)!=-1);
 
 	// la fermeture de la socket délenche la fin du thread distant
 	// on reste donc "ouvert" 5 secondes pour entendre qq chose
-	sleep(5);
+	sleep((unsigned int) duration);
 
 	printf("done!\n");
 	close(sockfd);

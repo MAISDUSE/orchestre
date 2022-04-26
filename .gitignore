@@ -13,3 +13,7 @@
 *.vsix
 
 .DS_Store
+
+orchestre-main/demo
+
+orchestre-main/sender

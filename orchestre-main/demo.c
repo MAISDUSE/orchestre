@@ -20,7 +20,7 @@
 
 #include "semaphore.h"
 
-#define N_INSTRU 10
+#define N_INSTRU 2
 
 ALuint sources[N_INSTRU];
 
@@ -70,6 +70,24 @@ void* thread_client(void *args)
 	 * éventuellement changer la position ou
 	 * l'orientation, etc.
 	 */
+
+
+	alSource3f(s, AL_POSITION, 0.0f, 0.0f, 0.0f);
+	// alSource3f(s, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+	alSourcef(s, AL_LOOPING, AL_FALSE);
+	alSourcei(s, AL_BUFFER, (ALint)b);
+
+	// Aténuation
+	float globalRefDistance = 75.0f;
+	float globalMaxDistance = 1250.0f;
+	alSourcef(s, AL_REFERENCE_DISTANCE, globalRefDistance);
+	alSourcef(s, AL_MAX_DISTANCE, globalMaxDistance);
+
+	// Direction
+	alSource3f(s, AL_DIRECTION, 0.0f, 0.0f, 0.0f);
+	alSourcef(s, AL_CONE_INNER_ANGLE, 180.0f);
+	alSourcef(s, AL_CONE_OUTER_ANGLE, 240.0f);
+
 	alSourcePlay(s);
 
 	ALint sizeInBytes;
@@ -89,9 +107,43 @@ void* thread_client(void *args)
 
 	send(sockfd, &durationInSeconds, sizeof(durationInSeconds), 0);
 
-	char c;
+	int c;
 	ssize_t n;
-	while((n=read(sockfd, &c, 1))!=0); // une boucle infinie...
+	int play = 1;
+	char msg[MAX_LEN];
+	int my_vec[3];
+	
+	while((n=recv(sockfd, &c, sizeof(c), 0)) != 0) {
+		switch (c)
+		{
+			case 1:
+				if (play == 1) {
+					alSourcePause(s);
+					strcpy(msg, "Pause");
+					play = 0;
+				} else {
+					alSourcePlay(s);
+					strcpy(msg, "Play");
+					play = 1;
+				}
+				break;
+
+			case 2:
+				assert(recv(sockfd, my_vec, sizeof(my_vec), 0) > 0);
+				// TODO : MATHIEU C'EST TON MOMENT
+				printf("Nouvelle position de la source : %d %d %d\n", my_vec[0], my_vec[1], my_vec[2]);
+				strcpy(msg, "Position mise a jour");
+				break;
+
+			default:
+				break;
+
+		}
+		
+		send(sockfd, msg, sizeof(msg), 0);
+	}
+
+	printf("Fin de la lecture...\n");
 
 	alDeleteSources(1, &s);
 	alDeleteBuffers(1, &b);

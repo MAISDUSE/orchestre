@@ -7,6 +7,71 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+
+int menu()
+{
+	int reponse;
+	
+	printf("\nMenu du musicien : \n");
+	printf("[1] : Play/Pause\n");
+	printf("[2] : Position de la source\n");
+	printf("[3] : Changer d'instrument\n");
+	printf("[0] : Quitter\n");
+
+	scanf("%d", &reponse);
+	
+	return reponse;
+}
+
+void handle_menu(int sockfd, int menu) {
+	int unknown = 0;
+	int vec[3];
+	int inpt;
+
+	switch (menu)	
+	{
+		case 1:
+			assert(send(sockfd, &menu, sizeof(menu), 0) > 0);
+			
+			break;
+		
+		case 2:
+			printf("\nMise à jour des coordonnées :\n");
+			printf("X : ");
+			scanf("%d", &inpt);
+			vec[0] = inpt;
+
+			printf("Y : ");
+			scanf("%d", &inpt);
+			vec[1] = inpt;
+
+			printf("Z : ");
+			scanf("%d", &inpt);
+			vec[2] = inpt;
+
+			assert(send(sockfd, &menu, sizeof(menu), 0) > 0);
+			assert(send(sockfd, vec, sizeof(vec), 0) > 0);
+			break;
+		
+		case 3:
+			printf("Pas encore implémenté\n");
+			break;
+			
+		default:
+			unknown = 1;
+			break;
+	}
+
+	if (unknown == 0) {
+		char msg[50];
+		assert(recv(sockfd, msg, sizeof(msg), 0) > 0);
+		printf("--> %s\n", msg);
+	} else {
+		unknown = 0;
+		printf("Option inconnue\n");
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	if (argc-1!=1)
@@ -33,17 +98,15 @@ int main(int argc, char* argv[])
 	int duration;
 	assert(recv(sockfd, &duration, sizeof(duration), 0) > 0);
 
-	printf("duration of song : %d\n", duration);
+	// printf("duration of song : %d\n", duration);
 
-
-	#define BUFF_SIZE 10
-	char buffer[BUFF_SIZE];
-	strncpy(buffer, "test", BUFF_SIZE);
-	assert(send(sockfd, buffer, sizeof(buffer), 0)!=-1);
-
-	// la fermeture de la socket délenche la fin du thread distant
-	// on reste donc "ouvert" 5 secondes pour entendre qq chose
-	sleep((unsigned int) duration);
+	int m = -1;
+	
+	do {
+		m = menu();
+		handle_menu(sockfd, m);
+	} while(m != 0);
+	
 
 	printf("done!\n");
 	close(sockfd);

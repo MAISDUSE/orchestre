@@ -56,7 +56,7 @@ void handle_menu(int sockfd, int menu) {
 		case 3:
 			printf("Pas encore implémenté\n");
 			break;
-			
+
 		default:
 			unknown = 1;
 			break;
@@ -95,18 +95,16 @@ int main(int argc, char* argv[])
     // la connexion déclenche la création du thread distant
     assert(connect(sockfd, (struct sockaddr *)&addr, sizeof(addr))>=0);
 
-	int duration;
+	/* int duration;
 	assert(recv(sockfd, &duration, sizeof(duration), 0) > 0);
 
-	// printf("duration of song : %d\n", duration);
+	printf("Duration of song : %d\n", duration); */
 
 	int m = -1;
-	
 	do {
 		m = menu();
 		handle_menu(sockfd, m);
 	} while(m != 0);
-	
 
 	printf("done!\n");
 	close(sockfd);

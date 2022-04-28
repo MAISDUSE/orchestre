@@ -90,7 +90,7 @@ void* thread_client(void *args)
 
 	alSourcePlay(s);
 
-	ALint sizeInBytes;
+	/* ALint sizeInBytes;
 	ALint channels;
 	ALint bits;
 	ALint frequency;
@@ -105,7 +105,7 @@ void* thread_client(void *args)
 	lengthInSamples = sizeInBytes * 8 / (channels * bits);
 	durationInSeconds = lengthInSamples / frequency;
 
-	send(sockfd, &durationInSeconds, sizeof(durationInSeconds), 0);
+	send(sockfd, &durationInSeconds, sizeof(durationInSeconds), 0); */
 
 	int c;
 	ssize_t n;

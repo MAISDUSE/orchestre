@@ -7,7 +7,6 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-
 int menu()
 {
 	int reponse;
@@ -28,11 +27,11 @@ void handle_menu(int sockfd, int menu) {
 	int vec[3];
 	int inpt;
 
+	assert(send(sockfd, &menu, sizeof(menu), 0) > 0);
+
 	switch (menu)	
 	{
 		case 1:
-			assert(send(sockfd, &menu, sizeof(menu), 0) > 0);
-			
 			break;
 		
 		case 2:
@@ -49,12 +48,10 @@ void handle_menu(int sockfd, int menu) {
 			scanf("%d", &inpt);
 			vec[2] = inpt;
 
-			assert(send(sockfd, &menu, sizeof(menu), 0) > 0);
 			assert(send(sockfd, vec, sizeof(vec), 0) > 0);
 			break;
 		
 		case 3:
-			printf("Pas encore implémenté\n");
 			break;
 
 		default:

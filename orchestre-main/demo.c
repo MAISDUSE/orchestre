@@ -111,7 +111,7 @@ void* thread_client(void *args)
 	ssize_t n;
 	int play = 1;
 	char msg[MAX_LEN];
-	int my_vec[3];
+	int vec[3];
 	
 	while((n=recv(sockfd, &c, sizeof(c), 0)) != 0) {
 		switch (c)
@@ -129,12 +129,14 @@ void* thread_client(void *args)
 				break;
 
 			case 2:
-				assert(recv(sockfd, my_vec, sizeof(my_vec), 0) > 0);
-				// TODO : MATHIEU C'EST TON MOMENT
-				printf("Nouvelle position de la source : %d %d %d\n", my_vec[0], my_vec[1], my_vec[2]);
+				assert(recv(sockfd, vec, sizeof(vec), 0) > 0);
+				alSource3f(s, AL_POSITION, (float) vec[0], (float) vec[1], (float) vec[2]);
+				printf("%d : new source pos : %d %d %d\n", sockfd, vec[0], vec[1], vec[2]);
 				strcpy(msg, "Position mise a jour");
 				break;
-
+			case 3:
+				strcpy(msg, "Pas encore implémenté");
+				break;
 			default:
 				break;
 

@@ -10,6 +10,8 @@
 #include <string.h>
 #include <AL/al.h>
 #include <AL/alc.h>
+#include <dirent.h>
+#include <errno.h>
 
 #if defined(__APPLE__)
 #include "freealut/alut.h"
@@ -20,7 +22,7 @@
 
 #include "semaphore.h"
 
-#define N_INSTRU 2
+#define N_INSTRU 4
 
 ALuint sources[N_INSTRU];
 
@@ -85,8 +87,8 @@ void* thread_client(void *args)
 
 	// Direction
 	alSource3f(s, AL_DIRECTION, 0.0f, 0.0f, 0.0f);
-	alSourcef(s, AL_CONE_INNER_ANGLE, 180.0f);
-	alSourcef(s, AL_CONE_OUTER_ANGLE, 240.0f);
+	alSourcef(s, AL_CONE_INNER_ANGLE, 45.0f);
+	alSourcef(s, AL_CONE_OUTER_ANGLE, 90.0f);
 
 	alSourcePlay(s);
 
@@ -112,11 +114,16 @@ void* thread_client(void *args)
 	int play = 1;
 	char msg[MAX_LEN];
 	int vec[3];
+	int ack;
+	struct dirent *dir;
+	DIR *d;
+	char filenames[100][1024];
+	int file_index;
 	
 	while((n=recv(sockfd, &c, sizeof(c), 0)) != 0) {
 		switch (c)
 		{
-			case 1:
+			case 1: // Play / Pause
 				if (play == 1) {
 					alSourcePause(s);
 					strcpy(msg, "Pause");
@@ -128,16 +135,71 @@ void* thread_client(void *args)
 				}
 				break;
 
-			case 2:
+			case 2: // Changement position
 				assert(recv(sockfd, vec, sizeof(vec), 0) > 0);
 				alSource3f(s, AL_POSITION, (float) vec[0], (float) vec[1], (float) vec[2]);
 				printf("%d : new source pos : %d %d %d\n", sockfd, vec[0], vec[1], vec[2]);
 				strcpy(msg, "Position mise a jour");
 				break;
-			case 3:
-				strcpy(msg, "Pas encore implémenté");
+			
+			case 3: // Changement orientation
+				assert(recv(sockfd, vec, sizeof(vec), 0) > 0);
+				alSource3f(s, AL_DIRECTION, (float) vec[0], (float) vec[1], (float) vec[2]);
+				printf("%d : new source direction pos : %d %d %d\n", sockfd, vec[0], vec[1], vec[2]);
+				strcpy(msg, "Orientation mise a jour");
 				break;
-			default:
+
+			case 4: // Changement instruments
+				file_index = 0;
+				d = opendir("./sounds");
+
+				if (d) {
+					while (recv(sockfd, &ack, sizeof(ack), 0) != 0 && (dir = readdir(d)) != NULL) {
+						strncpy(filenames[file_index], dir->d_name, 1024);
+						// printf("Filename id[%d] : %s\n", file_index, filenames[file_index]);
+						assert(send(sockfd, filenames[file_index], sizeof(filenames[file_index]), 0) > 0);
+						file_index++;
+					}
+
+					closedir(d);
+					dir = NULL;
+				} else {
+					assert(recv(sockfd, &ack, sizeof(ack), 0) > 0);
+					perror("Not a file or folder !\n");
+				}
+
+				// Arreter la réception des noms de fichiers côté client
+				strncpy(filenames[file_index + 1], "*", 1024);
+				assert(send(sockfd, filenames[file_index + 1], sizeof(filenames[file_index + 1]), 0) > 0);
+				
+				// Lire le fichier sélectioné
+				assert(recv(sockfd, &file_index, sizeof(file_index), 0) > 0);
+
+				// Chemin du fichier sélectionné
+				strcpy(name, "sounds/");
+				strcat(name, filenames[file_index]);
+
+				printf("Nouvelle source : %s\n", filenames[file_index]);
+
+				// Suppression de l'ancienne source
+				alDeleteSources(1, &s);
+				alDeleteBuffers(1, &b);
+
+				// Création de la nouvelle
+				b = alutCreateBufferFromFile(name);
+				s = sources[nthr];
+
+				alGenSources(1, &s);
+				alSourcei(s, AL_BUFFER, (ALint) b);
+
+				alSourcePlay(s);
+
+				strcpy(msg, "Instrument modifié.");
+				
+				break;
+
+			default: // Autre
+				strcpy(msg, "");
 				break;
 
 		}
@@ -145,7 +207,7 @@ void* thread_client(void *args)
 		send(sockfd, msg, sizeof(msg), 0);
 	}
 
-	printf("Fin de la lecture...\n");
+	printf("Fermeture du socket\n");
 
 	alDeleteSources(1, &s);
 	alDeleteBuffers(1, &b);

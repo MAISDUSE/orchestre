@@ -1,11 +1,4 @@
-// gcc -O3 -Wall -Wextra -Wconversion -ansi -Wpedantic -Werror -std=c11 sender.c -o sender
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <assert.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <string.h>
+#include "musician.h"
 
 int menu()
 {
@@ -17,8 +10,9 @@ int menu()
 	printf("[3] : Orientation de la source\n");
 	printf("[4] : Changer d'instrument\n");
 	printf("[0] : Quitter\n");
+    printf("Votre choix : ");
 
-	scanf("%d", &reponse);
+	scanf("%d", &reponse); // Lire une string puis avec atoi transformer en entier -> retransformer en string et comparer avec l'originale
 
 	return reponse;
 }
@@ -105,14 +99,16 @@ void handle_menu(int sockfd, int menu)
 
 	if (unknown == 0)
 	{
-		assert(recv(sockfd, msg, sizeof(msg), 0) > 0);
-		printf("--> %s\n", msg);
+
 	}
 	else
 	{
 		unknown = 0;
 		printf("Option inconnue\n");
 	}
+
+    assert(recv(sockfd, msg, sizeof(msg), 0) > 0);
+    printf("--> %s\n", msg);
 }
 
 int main(int argc, char *argv[])

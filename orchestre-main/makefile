@@ -1,13 +1,10 @@
-.PHONY: demo sender
+.PHONY: maestro musician
 
-demo:
-	gcc -o demo demo.c semaphore.c freealut/*.c -lalut -pthread -lopenal -lm -Wall -Wconversion -Wextra
+maestro:
+	gcc -o maestro maestro.c sockets/semaphore.c audio/maestro_audio.c menu/maestro_menu.c sockets/maestro_sockets.c freealut/*.c -lalut -pthread -lopenal -lm -Wall -Wconversion -Wextra
 
-sender:
-	gcc -o sender sender.c -Wall -Wconversion -Wextra
+musician:
+	gcc -o musician musician.c menu/musician_menu.c sockets/musician_sockets.c -Wall -Wconversion -Wextra
 
-play:
-	./demo 1234
-
-send:
-	./sender 1234
+all:
+	make maestro && make musician

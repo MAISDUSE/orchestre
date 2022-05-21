@@ -35,6 +35,7 @@ int playPause(Musician *musicos) {
 int changePosition(Musician *musicos, float vec[]) {
     int state = 0;
     if (musicos->loadedSource == 1) {
+        printf("Updating source position : %f %f %f\n",vec[0], vec[1], vec[2]);
         alSource3f(musicos->source, AL_POSITION, vec[0], vec[1], vec[2]);
     } else {
         perror("Musician source not loaded\n");
@@ -73,11 +74,15 @@ void setSourceParameters(Musician *musicos) {
     alSourcef(musicos->source, AL_CONE_OUTER_ANGLE, 90.0f);
 }
 
+void deleteSourceBuffer(Musician * musicos) {
+    alDeleteSources(1, &musicos->source);
+    alDeleteBuffers(1, &musicos->buffer);
+}
+
 void changeSource(Musician *musicos, char *name) {
     if (musicos->loadedSource == 1) {
         // Suppression de l'ancienne source
-        alDeleteSources(1, &musicos->source);
-        alDeleteBuffers(1, &musicos->buffer);
+        deleteSourceBuffer(musicos);
     }
 
     // Création de la nouvelle

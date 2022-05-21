@@ -22,6 +22,13 @@ Musician createMusician(int sockfd, long int nthr, long int automode) {
     return musicos;
 }
 
+void receiveVector(Musician * musicos, float * vec, size_t size) {
+    if (recv(musicos->sockfd, vec, size, 0) <= 0) {
+        perror("Error reciving vector\n");
+        exit(1);
+    }
+}
+
 void handleMusicianActions(Musician * musicos) {
     #define MSG_SIZE 1024
     int choice;
@@ -30,6 +37,8 @@ void handleMusicianActions(Musician * musicos) {
     char response[MSG_SIZE];
 
     while (recv(musicos->sockfd, &choice, sizeof(choice), 0) != 0) {
+        printf("Reçu : %d\n", choice);
+
         switch (choice) {
 
             case PLAY_PAUSE: // Play Pause
@@ -38,19 +47,13 @@ void handleMusicianActions(Musician * musicos) {
                 break;
 
             case CHG_POSITION: // Changement de position
-                if (recv(musicos->sockfd, vec, sizeof(vec), 0) <= 0) {
-                    perror("Error reciving vector for position\n");
-                    exit(1);
-                }
+                receiveVector(musicos, vec, sizeof(vec));
                 state = changePosition(musicos, vec);
                 getFeedbackString(response, CHG_POSITION, state, MSG_SIZE);
                 break;
 
             case CHG_DIRECTION: // Changement d'orientation
-                if (recv(musicos->sockfd, vec, sizeof(vec), 0) <= 0) {
-                    perror("Error reciving vector for orientation\n");
-                    exit(1);
-                }
+                receiveVector(musicos, vec, sizeof(vec));
                 state = changeOrientation(musicos, vec);
                 getFeedbackString(response, CHG_DIRECTION, state, MSG_SIZE);
                 break;
@@ -58,6 +61,10 @@ void handleMusicianActions(Musician * musicos) {
             case CHG_INSTRUMENT: // Changement d'instrument
                 printf("Not implemented yet\n");
                 getFeedbackString(response, CHG_INSTRUMENT, state = -2, MSG_SIZE);
+                break;
+
+            case QUIT:
+                strncpy(response, "Au revoir", MSG_SIZE);
                 break;
 
             default:
@@ -82,7 +89,7 @@ void initSocket(char *argv[], uint16_t port) {
     host_sockfd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
 
     if (host_sockfd < 0) {
-        perror("Error calling socket()\n");
+        perror("Error creating socket\n");
         exit(1);
     }
 
@@ -129,6 +136,10 @@ void *thread_maestro(void *args) {
 
     V(0);
 
+    if (send(sockfd, &automode, sizeof(automode), 0) <= 0) {
+        perror("Error connecting to musician\n");
+        exit(1);
+    }
     printf("Musicien connecté : %d\n", sockfd);
 
     if (automode == 0) { // Gérer les actions entre sockets
@@ -140,6 +151,7 @@ void *thread_maestro(void *args) {
     }
 
     close(sockfd);
+    deleteSourceBuffer(&(musicians[nthr]));
     nbThreads--;
 
     printf("Musicien déconnecté : %d\n", sockfd);

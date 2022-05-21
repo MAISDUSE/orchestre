@@ -2,7 +2,7 @@
 
 int menu()
 {
-	int reponse;
+	int response;
 
 	printf("\nMenu du musicien : \n");
 	printf("[1] : Play/Pause\n");
@@ -12,17 +12,29 @@ int menu()
 	printf("[0] : Quitter\n");
     printf("Votre choix : ");
 
-	scanf("%d", &reponse); // Lire une string puis avec atoi transformer en entier -> retransformer en string et comparer avec l'originale
+    scanf("%d", &response);
 
-	return reponse;
+    int c;
+    while((c = getchar()) != '\n' && c != EOF); // Vider le buffer en cas de reception d'autre chose que des entiers
+
+	/* if (scanf("%d", &response) != 1) {
+        printf("Veuillez indiquer un chiffre valide\n");
+
+        return menu(); // Redemander la saisie
+
+    } else {
+        return response;
+    }*/
+
+    return response;
 }
 
 void handle_menu(int sockfd, int menu)
 {
 	int unknown = 0;
-	int vec[3];
+	float vec[3];
 	int inpt;
-	char msg[50];
+	char msg[1024];
 	int ack = 1;
 	char filenames[1024];
 	int file_index;
@@ -37,16 +49,20 @@ void handle_menu(int sockfd, int menu)
 		case 2:
 			printf("\nMise à jour des coordonnées :\n");
 			printf("X : ");
-			scanf("%d", &inpt);
-			vec[0] = inpt;
+			scanf("%f", &(vec[0]));
+
+            int c;
+            while((c = getchar()) != '\n' && c != EOF); // Vider le buffer
 
 			printf("Y : ");
-			scanf("%d", &inpt);
-			vec[1] = inpt;
+            scanf("%f", &(vec[1]));
+
+            while((c = getchar()) != '\n' && c != EOF); // Vider le buffer
 
 			printf("Z : ");
-			scanf("%d", &inpt);
-			vec[2] = inpt;
+            scanf("%f", &(vec[2]));
+
+            while((c = getchar()) != '\n' && c != EOF); // Vider le buffer
 
 			assert(send(sockfd, vec, sizeof(vec), 0) > 0);
 			break;
@@ -126,25 +142,42 @@ int main(int argc, char *argv[])
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0); // TCP socket
 	assert(sockfd >= 0);
 
+    struct timeval tv;
+    tv.tv_sec = 5;
+    tv.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(port);
 	assert(inet_pton(AF_INET, "127.0.0.1", &addr.sin_addr) >= 0);
-
 	// la connexion déclenche la création du thread distant
 	assert(connect(sockfd, (struct sockaddr *)&addr, sizeof(addr)) >= 0);
+    long int automode;
+
+    printf("Connexion avec le maestro...\n");
+
+    if (recv(sockfd, &automode, sizeof(automode), 0) <= 0) {
+        printf("Le maestro est injoignable ou ses postes de musiciens sont complets\n");
+        exit(1);
+    }
+
+    if (automode == 0) {
+        printf("Connecté, bienvenue.\n");
+        int m = -1;
+        do
+        {
+            m = menu();
+            handle_menu(sockfd, m);
+        } while (m != 0);
+    } else {
+        printf("Le maestro est en mode automatique, détendez vous et profitez du spectacle.\n");
+    }
 
 	/* int duration;
 	assert(recv(sockfd, &duration, sizeof(duration), 0) > 0);
 
 	printf("Duration of song : %d\n", duration); */
-
-	int m = -1;
-	do
-	{
-		m = menu();
-		handle_menu(sockfd, m);
-	} while (m != 0);
 
 	printf("done!\n");
 	close(sockfd);

@@ -6,9 +6,7 @@ void getFeedbackString(char * response, int action, int state, int msg_size) {
         case PLAY_PAUSE:
             if (state == -1) {
                 strncpy(response, "Pas d'instrument chargé", msg_size);
-            }
-
-            if (state == 1) {
+            } else if (state == 1) {
                 strncpy(response, "Source en train de jouer", msg_size);
             } else {
                 strncpy(response, "Source en pause", msg_size);

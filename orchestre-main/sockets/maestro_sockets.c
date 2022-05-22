@@ -1,5 +1,8 @@
 #include "maestro_sockets.h"
 
+#define MSG_SIZE 1024
+#define MAX_FILE_COUNT 30
+
 extern int N_INSTRU;
 
 int host_sockfd;
@@ -29,15 +32,57 @@ void receiveVector(Musician * musicos, float * vec, size_t size) {
     }
 }
 
+void getInstrumentName(Musician * musicos, char * name) {
+    int ack;
+    int file_index = 0;
+    char filenames[MAX_FILE_COUNT][MSG_SIZE];
+
+    DIR * d = opendir("./sounds");
+    struct dirent *dir;
+
+    if (d) {
+        while (recv(musicos->sockfd, &ack, sizeof(ack), 0) != 0 && (dir = readdir(d)) != NULL) {
+            strncpy(filenames[file_index], dir->d_name, MSG_SIZE);
+            // printf("Filename id[%d] : %s\n", file_index, filenames[file_index]);
+            if (send(musicos->sockfd, filenames[file_index], sizeof(filenames[file_index]), 0) < 0) {
+                perror("Error sending filename to musician\n");
+                exit(1);
+            }
+            file_index++;
+        }
+
+        closedir(d);
+        dir = NULL;
+    } else {
+        if (recv(musicos->sockfd, &ack, sizeof(ack), 0) < 0) {
+            perror("Error receiving ack\n");
+        }
+        fprintf(stderr, "Not a file or folder !\n");
+    }
+
+    // Arreter la réception des noms de fichiers côté client
+    strncpy(filenames[file_index + 1], "*", MSG_SIZE); // * => indique la fin de l'envoi
+    if (send(musicos->sockfd, filenames[file_index + 1], sizeof(filenames[file_index + 1]), 0) < 0) {
+        perror("Error sending end tag\n");
+        exit(1);
+    }
+
+    // Lire le fichier sélectioné
+    assert(recv(musicos->sockfd, &file_index, sizeof(file_index), 0) > 0);
+
+    // Chemin du fichier sélectionné
+    strncpy(name, "sounds/", MSG_SIZE);
+    strncat(name, filenames[file_index], MSG_SIZE);
+}
+
 void handleMusicianActions(Musician * musicos) {
-    #define MSG_SIZE 1024
     int choice;
     float vec[3];
+    char name[MSG_SIZE];
     int state;
     char response[MSG_SIZE];
 
     while (recv(musicos->sockfd, &choice, sizeof(choice), 0) != 0) {
-        printf("Reçu : %d\n", choice);
 
         switch (choice) {
 
@@ -59,8 +104,9 @@ void handleMusicianActions(Musician * musicos) {
                 break;
 
             case CHG_INSTRUMENT: // Changement d'instrument
-                printf("Not implemented yet\n");
-                getFeedbackString(response, CHG_INSTRUMENT, state = -2, MSG_SIZE);
+                getInstrumentName(musicos, name);
+                changeSource(musicos, name);
+                strncpy(response, "Instrument modifié", MSG_SIZE);
                 break;
 
             case QUIT:
@@ -68,15 +114,12 @@ void handleMusicianActions(Musician * musicos) {
                 break;
 
             default:
-                changeSource(musicos, "./sounds/rttn.wav");
                 strncpy(response, "Command unknown", MSG_SIZE);
                 break;
         }
         if (send(musicos->sockfd, response, sizeof(response), 0) <= 0) {
             perror("Error sending feedback message\n");
             exit(1);
-        } else {
-            printf("Message envoyé : %s\n", response);
         }
     }
 }

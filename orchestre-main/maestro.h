@@ -35,6 +35,18 @@ typedef struct {
     int loadedSource;
 } Musician;
 
+typedef enum {CREATE, MUSIC, PLAY, WAIT, POSITION, DIRECTION, END} AvailableCommands;
+
+typedef struct {
+    AvailableCommands cmd;
+    int param1;
+    int param2;
+    int param3;
+    char music[1024];
+    int musician;
+} Command;
+
+
 #define NB_MAX_INSTRU 2
 
 // Actions

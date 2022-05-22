@@ -168,6 +168,10 @@ void initSocket(char *argv[], uint16_t port) {
     printf("Maestro socket init complete\n");
 }
 
+void closeSocket() {
+    close(host_sockfd);
+}
+
 // Thread maestro gestion des sockets musiciens
 void *thread_maestro(void *args) {
 
@@ -206,6 +210,8 @@ void *thread_maestro(void *args) {
 void awaitNewConnections(int automode) {
     pthread_t thr[N_INSTRU];
     void *args[3];
+
+    printf("Waiting for musicians\n");
 
     while (nbThreads < N_INSTRU) // attente des N_INSTRU connexion
     {

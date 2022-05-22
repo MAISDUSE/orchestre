@@ -8,6 +8,7 @@
 
 #define CHAR_SIZE 1024
 
+int isInt(char * entier);
 int getInt(char * msg);
 // float getFloat(char * msg);
 void sendAck(int sockfd);

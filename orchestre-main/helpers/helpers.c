@@ -1,21 +1,24 @@
 #include "helpers.h"
 
+int isInt(char * supposed_int) {
+    char validation[CHAR_SIZE];
+    int entier = atoi(supposed_int);
+
+    sprintf(validation, "%d", entier);
+
+    return strncmp(supposed_int, validation, CHAR_SIZE) == 0;
+}
+
 int getInt(char * msg) {
     char response[CHAR_SIZE];
-    char validation[CHAR_SIZE];
-    int entier;
     printf("%s", msg);
     scanf("%s", response);
 
     int c;
     while((c = getchar()) != '\n' && c != EOF); // Vider le buffer
 
-    entier = atoi(response);
-
-    sprintf(validation, "%d", entier);
-
-    if (strncmp(response, validation, CHAR_SIZE) == 0) {
-        return entier;
+    if (isInt(response)) {
+        return atoi(response);
     } else {
         printf("Erreur : veuillez indiquer un nombre valide\n");
         return getInt(msg);

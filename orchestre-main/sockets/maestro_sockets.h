@@ -7,6 +7,7 @@
 #define MAESTRO_SOCKETS
 
 void initSocket(char * argv[], uint16_t port);
+void closeSocket();
 void awaitNewConnections(int automode);
 
 #endif

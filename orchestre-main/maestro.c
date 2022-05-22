@@ -30,5 +30,7 @@ int main(int argc, char *argv[]) {
 
     free(commands);
     closeSocket();
+
+    printf("Fin du concert, bonne journée !\n");
     return 0;
 }

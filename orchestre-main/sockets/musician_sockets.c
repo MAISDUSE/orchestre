@@ -26,7 +26,10 @@ void initSocket(uint16_t port) {
 
 void connectSocket() {
     // la connexion déclenche la création du thread distant
-    assert(connect(client_sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr)) >= 0);
+    if (connect(client_sockfd, (struct sockaddr *) &client_addr, sizeof(client_addr)) < 0) {
+        perror("Le maestro n'est pas joignable, vérifiez qu'il soit bien lancé\n");
+        exit(1);
+    }
 
     long int automode;
 

@@ -95,6 +95,8 @@ void changeSource(Musician *musicos, char *name) {
     if (musicos->loadedSource == 0) setSourceParameters(musicos);
 
     musicos->loadedSource = 1;
+
+    if (musicos->playing) alSourcePlay(musicos->source);
 }
 
 #pragma clang diagnostic pop
